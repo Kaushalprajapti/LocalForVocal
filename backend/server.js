@@ -24,8 +24,22 @@ const errorHandler = require('./middleware/errorHandler');
 
 // Security Middleware
 app.use(helmet());
+// Build allowed origins list from ENV
+const allowedOrigins = [
+  ...process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim())
+];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps / Postman)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS: " + origin));
+    }
+  },
   credentials: true
 }));
 
