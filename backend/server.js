@@ -24,24 +24,86 @@ const errorHandler = require('./middleware/errorHandler');
 
 // Security Middleware
 app.use(helmet());
+
 // Build allowed origins list from ENV
-const allowedOrigins = [
-  ...process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim())
-];
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim().replace(/\/$/, ''))
+  : [];
 
-app.use(cors({
+// Normalize origins (remove trailing slashes and ensure proper protocol)
+const normalizeOrigin = (origin) => {
+  if (!origin) return origin;
+  return origin.replace(/\/$/, '');
+};
+
+// CORS Configuration
+const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps / Postman)
-    if (!origin) return callback(null, true);
+    console.log("Incoming Origin:", origin);
+    
+    // Allow requests with no origin (like mobile apps / Postman / server-to-server)
+    if (!origin) {
+      console.log("No origin - allowing request");
+      return callback(null, true);
+    }
 
-    if (allowedOrigins.includes(origin)) {
+    // Normalize the incoming origin
+    const normalizedOrigin = normalizeOrigin(origin);
+    
+    // Check if origin matches any allowed origin
+    const isAllowed = allowedOrigins.some(allowed => {
+      const normalizedAllowed = normalizeOrigin(allowed);
+      
+      // Remove protocol for comparison
+      const originWithoutProtocol = normalizedOrigin.replace(/^https?:\/\//, '').toLowerCase();
+      const allowedWithoutProtocol = normalizedAllowed.replace(/^https?:\/\//, '').toLowerCase();
+      
+      // Exact match (with or without protocol)
+      if (normalizedOrigin.toLowerCase() === normalizedAllowed.toLowerCase()) return true;
+      if (originWithoutProtocol === allowedWithoutProtocol) return true;
+      
+      // For localhost, check with/without port
+      if (originWithoutProtocol.startsWith('localhost') && allowedWithoutProtocol.startsWith('localhost')) {
+        const originPort = originWithoutProtocol.split(':')[1] || '3000';
+        const allowedPort = allowedWithoutProtocol.split(':')[1] || '3000';
+        if (originPort === allowedPort) return true;
+      }
+      
+      // For Vercel URLs, allow if they share the same base domain
+      if (originWithoutProtocol.includes('vercel.app') && allowedWithoutProtocol.includes('vercel.app')) {
+        // Extract the main domain part (before .vercel.app)
+        const originDomain = originWithoutProtocol.split('.vercel.app')[0];
+        const allowedDomain = allowedWithoutProtocol.split('.vercel.app')[0];
+        
+        // Allow if domains match or if one contains the other (for preview deployments)
+        if (originDomain === allowedDomain || 
+            originDomain.includes(allowedDomain) || 
+            allowedDomain.includes(originDomain)) {
+          return true;
+        }
+      }
+      
+      return false;
+    });
+
+    if (isAllowed) {
+      console.log("✓ Origin allowed:", normalizedOrigin);
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS: " + origin));
+      console.log("✗ Origin not allowed:", normalizedOrigin);
+      console.log("Allowed origins:", allowedOrigins);
+      callback(new Error("Not allowed by CORS: " + normalizedOrigin));
     }
   },
-  credentials: true
-}));
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
+
+app.use(cors(corsOptions));
 
 // Body Parser Middleware
 app.use(express.json({ limit: '10mb' }));
