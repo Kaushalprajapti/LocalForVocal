@@ -25,7 +25,6 @@ const EditCategory: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { showSuccess, showError } = useNotification();
   
-  const [category, setCategory] = useState<any>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -50,7 +49,6 @@ const EditCategory: React.FC = () => {
       try {
         setIsLoading(true);
         const categoryData = await api.categories.getById(id);
-        setCategory(categoryData);
         
         // Set form values
         reset({

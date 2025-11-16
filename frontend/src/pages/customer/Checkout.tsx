@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { ArrowLeft, ShoppingBag, CheckCircle, Phone, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, ShoppingBag, CheckCircle, Phone } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useCreateOrder } from '../../hooks/useOrders';
 import { useNotification } from '../../context/NotificationContext';
@@ -23,7 +23,7 @@ interface CheckoutForm {
 const Checkout: React.FC = () => {
   const navigate = useNavigate();
   const { state: cartState, clearCart, removeInvalidProducts } = useCart();
-  const { showSuccess, showError } = useNotification();
+  const { showError } = useNotification();
   const createOrderMutation = useCreateOrder();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,15 +52,13 @@ const Checkout: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    watch,
+    formState: { errors }
   } = useForm<CheckoutForm>({
     defaultValues: {
       termsAccepted: false,
     },
   });
 
-  const watchedEmail = watch('email');
 
   const onSubmit = async (data: CheckoutForm) => {
     if (cartState.items.length === 0) {

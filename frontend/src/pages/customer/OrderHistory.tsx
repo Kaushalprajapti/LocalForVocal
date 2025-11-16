@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Search, Filter, Calendar, ArrowRight, Eye, MessageCircle } from 'lucide-react';
+import { Package, Search, Filter, Calendar, Eye, MessageCircle } from 'lucide-react';
 import { Button } from '../../components/common/Button';
 import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
@@ -122,13 +122,13 @@ const OrderHistory: React.FC = () => {
     }
   };
 
-  const statusColors: Record<string, string> = {
+  const statusColors: Record<string, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
     pending: 'warning',
     confirmed: 'success',
     processing: 'info',
     shipped: 'info',
     delivered: 'success',
-    cancelled: 'danger',
+    cancelled: 'error',
   };
 
   const statusLabels: Record<string, string> = {
@@ -195,7 +195,7 @@ const OrderHistory: React.FC = () => {
                   <Input
                     placeholder="Search by order ID, customer name, or product..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
                     className="pl-10"
                   />
                 </div>

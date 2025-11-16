@@ -4,7 +4,6 @@ import {
   XCircle, 
   Loader, 
   RefreshCw,
-  Database,
   Package,
   ShoppingCart,
   Settings,

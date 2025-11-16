@@ -14,7 +14,6 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Card } from '../../components/common/Card';
 import { Image } from '../../components/common/Image';
-import { api } from '../../utils/api';
 import { useCreateProduct } from '../../hooks/useProducts';
 
 interface ProductForm {
@@ -48,9 +47,7 @@ const AddProduct: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    setValue,
-    watch
+    formState: { errors }
   } = useForm<ProductForm>({
     defaultValues: {
       isActive: true,
@@ -119,7 +116,7 @@ const AddProduct: React.FC = () => {
       formData.append('specifications', JSON.stringify(specs));
       
       // Add images
-      images.forEach((image, index) => {
+      images.forEach((image) => {
         formData.append('images', image);
       });
 
@@ -329,13 +326,13 @@ const AddProduct: React.FC = () => {
                     <Input
                       placeholder="Specification name"
                       value={spec.key}
-                      onChange={(e) => updateSpecification(index, 'key', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSpecification(index, 'key', e.target.value)}
                       className="flex-1"
                     />
                     <Input
                       placeholder="Value"
                       value={spec.value}
-                      onChange={(e) => updateSpecification(index, 'value', e.target.value)}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateSpecification(index, 'value', e.target.value)}
                       className="flex-1"
                     />
                     <Button

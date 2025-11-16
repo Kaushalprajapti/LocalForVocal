@@ -7,7 +7,6 @@ import {
   Edit, 
   Trash2, 
   Eye, 
-  MoreVertical,
   Package,
   AlertTriangle
 } from 'lucide-react';
@@ -22,7 +21,7 @@ import { Image } from '../../components/common/Image';
 import { Modal } from '../../components/common/Modal';
 import { QuickViewModal } from '../../components/customer/QuickViewModal';
 import { Skeleton } from '../../components/common/Loader';
-import { formatPrice, getStockStatus } from '../../utils/helpers';
+import { formatPrice } from '../../utils/helpers';
 import { Product } from '../../types';
 
 const ProductsManagement: React.FC = () => {
@@ -109,7 +108,7 @@ const ProductsManagement: React.FC = () => {
             <Input
               placeholder="Search products..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
               icon={<Search className="h-4 w-4 text-secondary-400" />}
             />
           </div>
@@ -179,7 +178,6 @@ const ProductsManagement: React.FC = () => {
               </thead>
               <tbody className="bg-white divide-y divide-secondary-200">
                 {products.map((product) => {
-                  const stockStatus = getStockStatus(product.stock);
                   return (
                     <tr key={product._id} className="hover:bg-secondary-50">
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -285,22 +283,22 @@ const ProductsManagement: React.FC = () => {
       </Card>
 
       {/* Pagination */}
-      {pagination && pagination.pages > 1 && (
+      {pagination && pagination.totalPages > 1 && (
         <div className="flex justify-center items-center space-x-2">
           <Button
             variant="outline"
             size="sm"
-            disabled={pagination.page === 1}
+            disabled={pagination.currentPage === 1}
           >
             Previous
           </Button>
           <span className="text-sm text-secondary-600">
-            Page {pagination.page} of {pagination.pages}
+            Page {pagination.currentPage} of {pagination.totalPages}
           </span>
           <Button
             variant="outline"
             size="sm"
-            disabled={pagination.page === pagination.pages}
+            disabled={pagination.currentPage === pagination.totalPages}
           >
             Next
           </Button>

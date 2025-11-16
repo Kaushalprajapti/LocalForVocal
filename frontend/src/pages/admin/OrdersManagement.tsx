@@ -5,10 +5,8 @@ import {
   Eye, 
   CheckCircle, 
   XCircle, 
-  Phone,
   Mail,
   MapPin,
-  Calendar,
   Package
 } from 'lucide-react';
 import { useOrders, useUpdateOrderStatus, useCancelOrder } from '../../hooks/useOrders';
@@ -35,7 +33,7 @@ const OrdersManagement: React.FC = () => {
   const cancelOrderMutation = useCancelOrder();
   
   // Fetch orders with filters
-  const { data: ordersData, isLoading, refetch, error } = useOrders({
+  const { data: ordersData, isLoading, refetch } = useOrders({
     search: searchQuery,
     status: statusFilter,
     limit: 20,
@@ -149,7 +147,7 @@ const OrdersManagement: React.FC = () => {
             <Input
               placeholder="Search orders..."
               value={searchQuery}
-              onChange={(e) => handleSearchChange(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearchChange(e.target.value)}
               icon={<Search className="h-4 w-4 text-secondary-400" />}
             />
           </div>
@@ -277,7 +275,6 @@ const OrdersManagement: React.FC = () => {
                               size="sm"
                               onClick={() => handleStatusUpdate(order._id, 'confirmed')}
                               className="text-green-600 hover:text-green-700"
-                              title="Confirm Order"
                             >
                               <CheckCircle className="h-4 w-4" />
                             </Button>
@@ -286,7 +283,6 @@ const OrdersManagement: React.FC = () => {
                               size="sm"
                               onClick={() => openCancelModal(order)}
                               className="text-red-600 hover:text-red-700"
-                              title="Cancel Order"
                             >
                               <XCircle className="h-4 w-4" />
                             </Button>
@@ -299,16 +295,14 @@ const OrdersManagement: React.FC = () => {
                               size="sm"
                               onClick={() => handleStatusUpdate(order._id, 'shipped')}
                               className="text-blue-600 hover:text-blue-700"
-                              title="Mark as Shipped"
                             >
                               <Package className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleCancelOrder(order)}
+                              onClick={() => openCancelModal(order)}
                               className="text-red-600 hover:text-red-700"
-                              title="Cancel Order"
                             >
                               <XCircle className="h-4 w-4" />
                             </Button>
@@ -321,16 +315,14 @@ const OrdersManagement: React.FC = () => {
                               size="sm"
                               onClick={() => handleStatusUpdate(order._id, 'delivered')}
                               className="text-green-600 hover:text-green-700"
-                              title="Mark as Delivered"
                             >
                               <CheckCircle className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleCancelOrder(order)}
+                              onClick={() => openCancelModal(order)}
                               className="text-red-600 hover:text-red-700"
-                              title="Cancel Order"
                             >
                               <XCircle className="h-4 w-4" />
                             </Button>

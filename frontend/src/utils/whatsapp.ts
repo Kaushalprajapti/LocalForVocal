@@ -1,5 +1,5 @@
 import { Order } from '../types';
-import { formatDateTime, createWhatsAppMessage } from './helpers';
+import { formatDateTime } from './helpers';
 
 export const sendOrderToWhatsApp = (order: Order, adminWhatsApp: string) => {
   const message = generateOrderMessage(order);

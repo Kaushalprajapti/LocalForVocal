@@ -10,7 +10,7 @@ import { formatPrice, getStockStatus } from '../../utils/helpers';
 
 const Cart: React.FC = () => {
   const { state: cartState, updateQuantity, removeFromCart, clearCart } = useCart();
-  const { showSuccess, showError } = useNotification();
+  const { showSuccess } = useNotification();
 
   const handleQuantityChange = (productId: string, newQuantity: number) => {
     if (newQuantity <= 0) {

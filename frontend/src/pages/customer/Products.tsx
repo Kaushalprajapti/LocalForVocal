@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Filter, Grid, List, SlidersHorizontal } from 'lucide-react';
+import { Grid, List, SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
 import { ProductGrid } from '../../components/customer/ProductGrid';
@@ -39,7 +39,7 @@ const Products: React.FC = () => {
     search: debouncedSearch,
   });
   
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: categories } = useCategories();
 
   // Update URL when filters change
   useEffect(() => {
@@ -102,7 +102,7 @@ const Products: React.FC = () => {
             Products
           </h1>
           <p className="text-secondary-600">
-            {pagination ? `${pagination.total} products found` : 'Loading...'}
+            {pagination ? `${pagination.totalProducts} products found` : 'Loading...'}
           </p>
         </div>
 
@@ -242,26 +242,26 @@ const Products: React.FC = () => {
                 />
 
                 {/* Pagination */}
-                {pagination && pagination.pages > 1 && (
+                {pagination && pagination.totalPages > 1 && (
                   <div className="flex justify-center items-center space-x-2 mt-12">
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={pagination.page === 1}
-                      onClick={() => handlePageChange(pagination.page - 1)}
+                      disabled={pagination.currentPage === 1}
+                      onClick={() => handlePageChange(pagination.currentPage - 1)}
                     >
                       Previous
                     </Button>
                     
-                    {[...Array(pagination.pages)].map((_, index) => {
+                    {[...Array(pagination.totalPages)].map((_, index) => {
                       const page = index + 1;
-                      const isCurrentPage = page === pagination.page;
+                      const isCurrentPage = page === pagination.currentPage;
                       
                       // Show first page, last page, current page, and pages around current page
                       if (
                         page === 1 ||
-                        page === pagination.pages ||
-                        (page >= pagination.page - 2 && page <= pagination.page + 2)
+                        page === pagination.totalPages ||
+                        (page >= pagination.currentPage - 2 && page <= pagination.currentPage + 2)
                       ) {
                         return (
                           <Button
@@ -275,8 +275,8 @@ const Products: React.FC = () => {
                           </Button>
                         );
                       } else if (
-                        page === pagination.page - 3 ||
-                        page === pagination.page + 3
+                        page === pagination.currentPage - 3 ||
+                        page === pagination.currentPage + 3
                       ) {
                         return <span key={page} className="text-secondary-400">...</span>;
                       }
@@ -286,8 +286,8 @@ const Products: React.FC = () => {
                     <Button
                       variant="outline"
                       size="sm"
-                      disabled={pagination.page === pagination.pages}
-                      onClick={() => handlePageChange(pagination.page + 1)}
+                      disabled={pagination.currentPage === pagination.totalPages}
+                      onClick={() => handlePageChange(pagination.currentPage + 1)}
                     >
                       Next
                     </Button>

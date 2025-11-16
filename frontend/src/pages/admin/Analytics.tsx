@@ -6,8 +6,6 @@ import {
   DollarSign,
   ShoppingCart,
   Package,
-  Users,
-  Calendar,
   Download
 } from 'lucide-react';
 import { useQuery } from 'react-query';
@@ -16,7 +14,7 @@ import { Card } from '../../components/common/Card';
 import { Badge } from '../../components/common/Badge';
 import { Button } from '../../components/common/Button';
 import { Skeleton } from '../../components/common/Loader';
-import { formatPrice, formatDateTime } from '../../utils/helpers';
+import { formatPrice } from '../../utils/helpers';
 
 const StatCard: React.FC<{
   title: string;
@@ -69,7 +67,6 @@ const StatCard: React.FC<{
 
 const Analytics: React.FC = () => {
   const [timeRange, setTimeRange] = useState('7d');
-  const [selectedMetric, setSelectedMetric] = useState('revenue');
 
   // Fetch analytics data
   const { data: salesData, isLoading: salesLoading } = useQuery(
@@ -110,13 +107,6 @@ const Analytics: React.FC = () => {
     { value: '30d', label: 'Last 30 days' },
     { value: '90d', label: 'Last 90 days' },
     { value: '1y', label: 'Last year' },
-  ];
-
-  const metrics = [
-    { value: 'revenue', label: 'Revenue', icon: DollarSign },
-    { value: 'orders', label: 'Orders', icon: ShoppingCart },
-    { value: 'products', label: 'Products', icon: Package },
-    { value: 'customers', label: 'Customers', icon: Users },
   ];
 
   const handleExport = () => {

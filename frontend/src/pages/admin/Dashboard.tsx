@@ -4,9 +4,6 @@ import {
   ShoppingCart, 
   Package, 
   AlertTriangle, 
-  TrendingUp,
-  Users,
-  Eye,
   Star
 } from 'lucide-react';
 import { useQuery } from 'react-query';
@@ -74,7 +71,7 @@ const Dashboard: React.FC = () => {
     }
   );
 
-  const { data: lowStockData, isLoading: lowStockLoading } = useQuery(
+  const { data: lowStockData } = useQuery(
     'low-stock-products',
     () => api.products.getLowStock(),
     {

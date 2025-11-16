@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useFavorites } from '../context/FavoriteContext';
+import { useFavorites } from '../../context/FavoriteContext';
 
 const FavoritesDebug: React.FC = () => {
   const { state, addToFavorites, removeFromFavorites, isFavorite, getFavoriteCount } = useFavorites();

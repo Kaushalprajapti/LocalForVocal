@@ -39,7 +39,6 @@ const EditProduct: React.FC = () => {
   const { data: categories } = useCategories();
   const updateProductMutation = useUpdateProduct();
   
-  const [product, setProduct] = useState<any>(null);
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -52,8 +51,6 @@ const EditProduct: React.FC = () => {
     register,
     handleSubmit,
     formState: { errors },
-    setValue,
-    watch,
     reset
   } = useForm<ProductForm>({
     defaultValues: {
@@ -72,7 +69,6 @@ const EditProduct: React.FC = () => {
       try {
         setIsLoading(true);
         const productData = await api.products.getById(id);
-        setProduct(productData);
         
         // Set form values
         reset({
@@ -172,7 +168,7 @@ const EditProduct: React.FC = () => {
       formData.append('specifications', JSON.stringify(specs));
       
       // Add new images
-      images.forEach((image, index) => {
+      images.forEach((image) => {
         formData.append('images', image);
       });
 
