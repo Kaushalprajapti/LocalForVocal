@@ -21,8 +21,10 @@ CORS errors when accessing backend from frontend due to:
 3. Update `ALLOWED_ORIGINS` with the following values:
 
 ```
-https://local-for-vocal-fqde.vercel.app,https://local-for-vocal-fqde-kaushals-projects-443b521b.vercel.app,http://localhost:3000
+https://local-for-vocal.vercel.app,https://local-for-vocal-fqde.vercel.app,http://localhost:3000
 ```
+
+**Note:** The CORS config will automatically allow all preview deployments (like `local-for-vocal-49jvvniqj-kaushals-projects-443b521b.vercel.app`) as long as you include the base URL `https://local-for-vocal.vercel.app` in the list.
 
 **Important Notes:**
 - ✅ No trailing slashes

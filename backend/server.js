@@ -25,74 +25,92 @@ const errorHandler = require('./middleware/errorHandler');
 // Security Middleware
 app.use(helmet());
 
-// Build allowed origins list from ENV
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(url => url.trim().replace(/\/$/, ''))
-  : [];
+// Parse allowed origins from environment variable
+// Supports: comma-separated, JSON array, or Python-style array
+const parseAllowedOrigins = (envValue) => {
+  if (!envValue) return [];
+  
+  const clean = (url) => url.trim().replace(/^['"]|['"]$/g, '').replace(/\/$/, '');
+  
+  // Try JSON array first
+  if (envValue.trim().startsWith('[')) {
+    try {
+      const parsed = JSON.parse(envValue);
+      return Array.isArray(parsed) ? parsed.map(clean).filter(Boolean) : [];
+    } catch {
+      // Python-style array: extract quoted strings
+      const matches = envValue.match(/['"]([^'"]+)['"]/g);
+      return matches ? matches.map(clean).filter(Boolean) : [];
+    }
+  }
+  
+  // Comma-separated format
+  return envValue.split(',').map(clean).filter(Boolean);
+};
 
-// Normalize origins (remove trailing slashes and ensure proper protocol)
-const normalizeOrigin = (origin) => {
-  if (!origin) return origin;
-  return origin.replace(/\/$/, '');
+const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
+console.log("🔒 CORS - Allowed Origins:", allowedOrigins.length > 0 ? allowedOrigins : "NONE SET");
+
+// Helper: Extract base project name from Vercel URL
+const getVercelBaseName = (domain) => {
+  // Remove hash patterns: "local-for-vocal-hash-kaushals-projects" -> "local-for-vocal"
+  if (domain.includes('-kaushals-projects')) {
+    return domain.split('-kaushals-projects')[0].replace(/-[a-z0-9]{6,}$/i, '');
+  }
+  // Remove simple hash: "local-for-vocal-fqde" -> "local-for-vocal"
+  const match = domain.match(/^(.+?)(-[a-z0-9]{4,})$/i);
+  return match && match[1].length >= 3 ? match[1] : domain;
+};
+
+// Helper: Check if two Vercel URLs belong to the same project
+const isSameVercelProject = (origin, allowed) => {
+  const originBase = getVercelBaseName(origin);
+  const allowedBase = getVercelBaseName(allowed);
+  return originBase === allowedBase || 
+         origin.startsWith(allowedBase) || 
+         allowed.startsWith(originBase);
 };
 
 // CORS Configuration
 const corsOptions = {
-  origin: function (origin, callback) {
-    console.log("Incoming Origin:", origin);
-    
-    // Allow requests with no origin (like mobile apps / Postman / server-to-server)
-    if (!origin) {
-      console.log("No origin - allowing request");
-      return callback(null, true);
-    }
+  origin: (origin, callback) => {
+    // Allow requests with no origin (mobile apps, Postman, server-to-server)
+    if (!origin) return callback(null, true);
 
-    // Normalize the incoming origin
-    const normalizedOrigin = normalizeOrigin(origin);
+    const normalize = (url) => url.replace(/\/$/, '').toLowerCase();
+    const removeProtocol = (url) => url.replace(/^https?:\/\//, '').toLowerCase();
     
-    // Check if origin matches any allowed origin
+    const originNorm = normalize(origin);
+    const originDomain = removeProtocol(originNorm);
+    
     const isAllowed = allowedOrigins.some(allowed => {
-      const normalizedAllowed = normalizeOrigin(allowed);
+      const allowedNorm = normalize(allowed);
+      const allowedDomain = removeProtocol(allowedNorm);
       
-      // Remove protocol for comparison
-      const originWithoutProtocol = normalizedOrigin.replace(/^https?:\/\//, '').toLowerCase();
-      const allowedWithoutProtocol = normalizedAllowed.replace(/^https?:\/\//, '').toLowerCase();
+      // Exact match
+      if (originNorm === allowedNorm || originDomain === allowedDomain) return true;
       
-      // Exact match (with or without protocol)
-      if (normalizedOrigin.toLowerCase() === normalizedAllowed.toLowerCase()) return true;
-      if (originWithoutProtocol === allowedWithoutProtocol) return true;
-      
-      // For localhost, check with/without port
-      if (originWithoutProtocol.startsWith('localhost') && allowedWithoutProtocol.startsWith('localhost')) {
-        const originPort = originWithoutProtocol.split(':')[1] || '3000';
-        const allowedPort = allowedWithoutProtocol.split(':')[1] || '3000';
-        if (originPort === allowedPort) return true;
+      // Localhost: match by port
+      if (originDomain.startsWith('localhost') && allowedDomain.startsWith('localhost')) {
+        return (originDomain.split(':')[1] || '3000') === (allowedDomain.split(':')[1] || '3000');
       }
       
-      // For Vercel URLs, allow if they share the same base domain
-      if (originWithoutProtocol.includes('vercel.app') && allowedWithoutProtocol.includes('vercel.app')) {
-        // Extract the main domain part (before .vercel.app)
-        const originDomain = originWithoutProtocol.split('.vercel.app')[0];
-        const allowedDomain = allowedWithoutProtocol.split('.vercel.app')[0];
-        
-        // Allow if domains match or if one contains the other (for preview deployments)
-        if (originDomain === allowedDomain || 
-            originDomain.includes(allowedDomain) || 
-            allowedDomain.includes(originDomain)) {
-          return true;
-        }
+      // Vercel URLs: check if same project
+      if (originDomain.includes('vercel.app') && allowedDomain.includes('vercel.app')) {
+        const originBase = originDomain.split('.vercel.app')[0];
+        const allowedBase = allowedDomain.split('.vercel.app')[0];
+        return isSameVercelProject(originBase, allowedBase);
       }
       
       return false;
     });
 
     if (isAllowed) {
-      console.log("✓ Origin allowed:", normalizedOrigin);
+      console.log("✓ Origin allowed:", origin);
       callback(null, true);
     } else {
-      console.log("✗ Origin not allowed:", normalizedOrigin);
-      console.log("Allowed origins:", allowedOrigins);
-      callback(new Error("Not allowed by CORS: " + normalizedOrigin));
+      console.log("✗ Origin not allowed:", origin);
+      callback(new Error("Not allowed by CORS: " + origin));
     }
   },
   credentials: true,
@@ -126,10 +144,7 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 // Database Connection
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI)
 .then(() => console.log('✅ MongoDB Connected Successfully'))
 .catch((err) => console.error('❌ MongoDB Connection Error:', err));
 
