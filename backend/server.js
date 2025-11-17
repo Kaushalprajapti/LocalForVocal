@@ -150,7 +150,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 // Routes
 app.use('/api/products', productRoutes);
-app.use('/api/ ', categoryRoutes);
+app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/analytics', analyticsRoutes);
@@ -158,7 +158,6 @@ app.use('/api/admin/products', adminProductRoutes);
 app.use('/api/admin/categories', adminCategoryRoutes);
 app.use('/api/admin/orders', adminOrderRoutes);
 app.use('/api/customer-orders', customerOrderRoutes);
-app.use('/api/categories', categoryRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
