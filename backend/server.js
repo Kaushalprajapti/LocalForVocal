@@ -25,103 +25,15 @@ const errorHandler = require('./middleware/errorHandler');
 // Security Middleware
 app.use(helmet());
 
-// Parse allowed origins from environment variable
-// Supports: comma-separated, JSON array, or Python-style array
-const parseAllowedOrigins = (envValue) => {
-  if (!envValue) return [];
-  
-  const clean = (url) => url.trim().replace(/^['"]|['"]$/g, '').replace(/\/$/, '');
-  
-  // Try JSON array first
-  if (envValue.trim().startsWith('[')) {
-    try {
-      const parsed = JSON.parse(envValue);
-      return Array.isArray(parsed) ? parsed.map(clean).filter(Boolean) : [];
-    } catch {
-      // Python-style array: extract quoted strings
-      const matches = envValue.match(/['"]([^'"]+)['"]/g);
-      return matches ? matches.map(clean).filter(Boolean) : [];
-    }
-  }
-  
-  // Comma-separated format
-  return envValue.split(',').map(clean).filter(Boolean);
-};
-
-const allowedOrigins = parseAllowedOrigins(process.env.ALLOWED_ORIGINS);
-console.log("🔒 CORS - Allowed Origins:", allowedOrigins.length > 0 ? allowedOrigins : "NONE SET");
-
-// Helper: Extract base project name from Vercel URL
-const getVercelBaseName = (domain) => {
-  // Remove hash patterns: "local-for-vocal-hash-kaushals-projects" -> "local-for-vocal"
-  if (domain.includes('-kaushals-projects')) {
-    return domain.split('-kaushals-projects')[0].replace(/-[a-z0-9]{6,}$/i, '');
-  }
-  // Remove simple hash: "local-for-vocal-fqde" -> "local-for-vocal"
-  const match = domain.match(/^(.+?)(-[a-z0-9]{4,})$/i);
-  return match && match[1].length >= 3 ? match[1] : domain;
-};
-
-// Helper: Check if two Vercel URLs belong to the same project
-const isSameVercelProject = (origin, allowed) => {
-  const originBase = getVercelBaseName(origin);
-  const allowedBase = getVercelBaseName(allowed);
-  return originBase === allowedBase || 
-         origin.startsWith(allowedBase) || 
-         allowed.startsWith(originBase);
-};
-
-// CORS Configuration
-const corsOptions = {
-  origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, Postman, server-to-server)
+const allowedOrigins = ['https://local-for-vocal.vercel.app/','https://local-for-vocal-kaushals-projects-443b521b.vercel.app/','http://localhost:3000'];
+app.use(cors({
+  origin: function(origin, callback) {
     if (!origin) return callback(null, true);
-
-    const normalize = (url) => url.replace(/\/$/, '').toLowerCase();
-    const removeProtocol = (url) => url.replace(/^https?:\/\//, '').toLowerCase();
-    
-    const originNorm = normalize(origin);
-    const originDomain = removeProtocol(originNorm);
-    
-    const isAllowed = allowedOrigins.some(allowed => {
-      const allowedNorm = normalize(allowed);
-      const allowedDomain = removeProtocol(allowedNorm);
-      
-      // Exact match
-      if (originNorm === allowedNorm || originDomain === allowedDomain) return true;
-      
-      // Localhost: match by port
-      if (originDomain.startsWith('localhost') && allowedDomain.startsWith('localhost')) {
-        return (originDomain.split(':')[1] || '3000') === (allowedDomain.split(':')[1] || '3000');
-      }
-      
-      // Vercel URLs: check if same project
-      if (originDomain.includes('vercel.app') && allowedDomain.includes('vercel.app')) {
-        const originBase = originDomain.split('.vercel.app')[0];
-        const allowedBase = allowedDomain.split('.vercel.app')[0];
-        return isSameVercelProject(originBase, allowedBase);
-      }
-      
-      return false;
-    });
-
-    if (isAllowed) {
-      console.log("✓ Origin allowed:", origin);
-      callback(null, true);
-    } else {
-      console.log("✗ Origin not allowed:", origin);
-      callback(new Error("Not allowed by CORS: " + origin));
-    }
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  exposedHeaders: ['Content-Range', 'X-Content-Range'],
-  preflightContinue: false,
-  optionsSuccessStatus: 204
-};
-
-app.use(cors(corsOptions));
+  credentials: true
+}));
 
 // Body Parser Middleware
 app.use(express.json({ limit: '10mb' }));
@@ -157,7 +69,7 @@ app.use('/api/admin/analytics', analyticsRoutes);
 app.use('/api/admin/products', adminProductRoutes);
 app.use('/api/admin/categories', adminCategoryRoutes);
 app.use('/api/admin/orders', adminOrderRoutes);
-app.use('/api/customer-orders', customerOrderRoutes);
+app.use('/api/admin/customer-orders', customerOrderRoutes);
 
 // Health Check
 app.get('/api/health', (req, res) => {
