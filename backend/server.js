@@ -25,7 +25,7 @@ const errorHandler = require('./middleware/errorHandler');
 // Security Middleware
 app.use(helmet());
 
-const allowedOrigins = ['https://local-for-vocal.vercel.app/','https://local-for-vocal-kaushals-projects-443b521b.vercel.app/','http://localhost:3000'];
+const allowedOrigins = ['https://local-for-vocal.vercel.app','https://local-for-vocal-kaushals-projects-443b521b.vercel.app','http://localhost:3000'];
 app.use(cors({
   origin: function(origin, callback) {
     if (!origin) return callback(null, true);
