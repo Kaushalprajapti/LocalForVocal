@@ -76,12 +76,12 @@ export const Header: React.FC = () => {
             >
               My Orders
             </Link>
-            <Link
+            {/* <Link
               to="/favorites"
               className="text-secondary-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
             >
               Favorites
-            </Link>
+            </Link> */}
             <Link
               to="/about"
               className="text-secondary-700 hover:text-primary-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
