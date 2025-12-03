@@ -1,6 +1,8 @@
 # LocalForVocal - E-Commerce Platform
 
 A modern, full-stack e-commerce platform built for local businesses to showcase and sell their products online. This project includes both frontend and backend components with comprehensive documentation.
+###  Website  
+**https://local-for-vocal.vercel.app/**
 
 ## 🚀 Project Overview
 
